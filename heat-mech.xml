@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cfsSimulation xmlns="http://www.cfs++.org/simulation" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.cfs++.org/simulation 
+https://opencfs.gitlab.io/cfs/xml/CFS-Simulation/CFS.xsd">
+
+    <!-- define which files are needed for simulation input & output-->
+    <fileFormats>
+        <input>
+            <!-- specify your ANSYS-cdb input file here -->
+            <cdb fileName="mesh_1_25.cdb"/>
+        </input>
+        <output>
+            <hdf5/>
+            <text id="txt"/>
+        </output>
+        <materialData file="mat.xml" format="xml"/>
+    </fileFormats>
+
+    <!-- material assignment -->
+    <domain geometryType="plane" printGridInfo="yes">
+        <variableList>
+            <!-- here you can specify variables for later use, e.g. in load definitions -->
+            <!-- reserved are x,y,z (spacial postion), t (time) and f (frequency) -->
+            <var name="dT" value="1"/>
+        </variableList>
+        <regionList>
+            <region name="S_Top" material="Steel_1"/>
+            <region name="S_Bottom" material="Steel_2"/>
+        </regionList>
+    </domain>
+
+    <!-- specify a linear temperature gradient -->
+    <sequenceStep index="1">
+        <analysis>
+            <static/>
+        </analysis>
+        <pdeList>
+            <heatConduction>
+                <regionList>
+                    <region name="S_Top"/>
+                    <region name="S_Bottom" />
+                </regionList>
+                <bcsAndLoads>
+                    <heatFlux name="L_Top" value="10000"/>
+                    <heatTransport name="L_Bottom" 
+                        volumeRegion="S_Bottom" 
+                        heatTransferCoefficient="100" 
+                        bulkTemperature="20.0"/>
+                </bcsAndLoads>
+                <storeResults>
+                    <nodeResult type="heatTemperature">
+                        <allRegions/>
+                    </nodeResult>
+                    <elemResult type="heatFluxDensity">
+                        <allRegions/>
+                    </elemResult>
+                </storeResults>
+            </heatConduction>
+        </pdeList>
+    </sequenceStep>
+     
+    <!-- compute effect of thermal expansion -->
+    <sequenceStep index="2">
+        <analysis>
+            <static/>
+        </analysis>
+        <pdeList>
+            <mechanic subType="planeStress">
+                <regionList>
+                    <region name="S_Top"/>
+                    <region name="S_Bottom" />
+                </regionList>
+                <bcsAndLoads>
+                    <fix name="L_Left">
+                        <comp dof="x"/>
+                    </fix>
+                    <fix name="P_Left">
+                        <comp dof="y"/>
+                    </fix>
+                    <thermalStrain name="S_Top">
+                        <sequenceStep index="1">
+                            <quantity name="heatTemperature" pdeName="heatConduction"/>
+                            <timeFreqMapping>
+                                <constant step="1"/>
+                            </timeFreqMapping>
+                        </sequenceStep>
+                    </thermalStrain>
+
+                    <thermalStrain name="S_Bottom">
+                        <sequenceStep index="1">
+                            <quantity name="heatTemperature" pdeName="heatConduction"/>
+                            <timeFreqMapping>
+                                <constant step="1"/>
+                            </timeFreqMapping>
+                        </sequenceStep>
+                    </thermalStrain>
+                </bcsAndLoads>
+                <storeResults>
+                    <nodeResult type="mechDisplacement">
+                        <allRegions/>
+                    </nodeResult>
+                    <elemResult type="mechStress">
+                        <allRegions/>
+                    </elemResult>
+                    <elemResult type="mechThermalStrain">
+                        <allRegions/>
+                    </elemResult>
+                </storeResults>
+            </mechanic>
+        </pdeList>
+    </sequenceStep>
+
+</cfsSimulation>
