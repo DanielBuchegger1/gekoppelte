@@ -1,0 +1,54 @@
+reset
+
+create brick x 0.45 y 0.75 z 0.008
+move volume 1 z 0.004
+
+create brick x 0.035 y 0.061 z 0.0004
+#{p1 = Id("volume")}
+move volume {p1} x 0 y -0.25 z 0.0082
+create brick x 0.035 y 0.061 z 0.0004
+#{p2 = Id("volume")}
+move volume {p2} x 0 y 0 z 0.0082
+create brick x 0.035 y 0.061 z 0.0004
+#{p3 = Id("volume")}
+move volume {p3} x -0.1125 y 0.25 z 0.0082
+
+imprint volume all
+merge volume all
+ 
+volume all size 0.005
+curve with length > 0.0079 and length < 0.0081 interval 2
+curve with length > 0.0003 and length < 0.0005 interval 2
+mesh volume all
+
+block 1 volume 1
+block 1 name "plate"
+block 2 volume {p1}
+block 2 name "piezo_south"
+block 3 volume {p2}
+block 3 name "piezo_middle"
+block 4 volume {p3}
+block 4 name "piezo_north"
+block all element type hex20
+
+nodeset 1 add surface with x_coord < -0.2249 or x_coord > 0.2249 or y_coord < -0.3749 or y_coord > 0.3749
+nodeset 1 name "fixed"
+
+nodeset 8 add surface with z_coord < 0.0001
+nodeset 8 name "force_ns"
+
+nodeset 2 add surface in volume {p1} with z_coord < 0.0081
+nodeset 2 name "piezo_south_bottom"
+nodeset 3 add surface in volume {p1} with z_coord > 0.0083
+nodeset 3 name "piezo_south_top"
+nodeset 4 add surface in volume {p2} with z_coord < 0.0081
+nodeset 4 name "piezo_middle_bottom"
+nodeset 5 add surface in volume {p2} with z_coord > 0.0083
+nodeset 5 name "piezo_middle_top"
+nodeset 6 add surface in volume {p3} with z_coord < 0.0081
+nodeset 6 name "piezo_north_bottom"
+nodeset 7 add surface in volume {p3} with z_coord > 0.0083
+nodeset 7 name "piezo_north_top"
+
+save as "plate_piezo.cub5" overwrite
+export ansys "plate_piezo.cdb" overwrite
