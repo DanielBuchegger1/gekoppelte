@@ -1,0 +1,342 @@
+<?xml version="1.0"?>
+<cfsSimulation xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.cfs++.org/simulation https://opencfs.gitlab.io/cfs/xml/CFS-Simulation/CFS.xsd"
+ xmlns="http://www.cfs++.org/simulation">
+ 
+  
+ <documentation>
+   <title> Plate with Piezoelectric patches</title>
+   <authors>
+     <author> Daniel Buchegger </author>
+   </authors>
+   <date>2026-11-26</date>
+   <keywords>
+     <keyword>electrostatic-mechanic</keyword>
+   </keywords>
+   <references> no references </references>
+   <isVerified>no</isVerified>
+   <description>
+   Description of the simulation
+   </description>
+ </documentation>
+
+  <fileFormats>
+    <input >
+      <cdb fileName="plate_piezo.cdb"/>
+    </input >
+    <output>
+      <hdf5/>
+      <text id='txt'/>
+    </output>
+    <materialData file="mat.xml" format="xml"/>
+  </fileFormats>
+
+  <domain geometryType="3d">
+    <regionList>
+      <region name="V_plate" material="PMMA"/>
+      <region name="V_piezo_south" material="PIC 255"/>
+      <region name="V_piezo_middle" material="PIC 255"/>
+      <region name="V_piezo_north" material="PIC 255"/>
+    </regionList>
+  </domain> 
+  
+  <!-- Static Analysis in sequenceStep 1-->
+  <sequenceStep index="1">
+    <analysis>
+      <static/>
+    </analysis>
+
+    <pdeList>
+      <!-- Mechanic PDE -->
+      <mechanic subType="3d">
+        <regionList>
+          <region name="V_plate"/>
+          <region name="V_piezo_south"/>
+          <region name="V_piezo_middle"/>
+          <region name="V_piezo_north"/>
+        </regionList>
+        <bcsAndLoads>
+          <fix name="S_fixed">
+            <comp dof="x"/>
+            <comp dof="y"/>
+            <comp dof="z"/>
+          </fix>
+
+          <pressure name="S_force" value="1000"/>
+        </bcsAndLoads>
+        <storeResults>
+          <nodeResult type="mechDisplacement">
+            <allRegions/>
+          </nodeResult>
+          <elemResult type="mechStrain">
+          <allRegions/>
+            </elemResult>
+        </storeResults>
+      </mechanic>
+
+      <electrostatic>
+        <regionList>
+        <region name="V_piezo_south"/>
+        <region name="V_piezo_middle"/>
+        <region name="V_piezo_north"/>
+        </regionList>
+        <bcsAndLoads>
+          <ground name="S_piezo_south_bottom"/>
+          <ground name="S_piezo_middle_bottom"/>
+          <ground name="S_piezo_north_bottom"/>
+
+          <constraint name="S_piezo_south_top"/>
+          <constraint name="S_piezo_middle_top"/>
+          <constraint name="S_piezo_north_top"/>
+        </bcsAndLoads>
+        <storeResults>
+          <nodeResult type="elecPotential">
+            <allRegions/>
+          </nodeResult>
+        </storeResults>
+      </electrostatic>
+    </pdeList>
+
+    <couplingList>
+      <direct>
+        <piezoDirect>
+          <regionList>
+            <!-- Regions for piezo coupling-->
+            <region name="V_piezo_south"/>
+            <region name="V_piezo_middle"/>
+            <region name="V_piezo_north"/>
+          </regionList>
+        </piezoDirect>
+      </direct>
+    </couplingList>
+  </sequenceStep>
+  
+  <!-- Eigenvalue Analysis in sequenceStep 2 -->
+  <sequenceStep index="2">
+    <analysis>
+      <eigenFrequency>
+        <isQuadratic>no</isQuadratic>
+        <numModes>10</numModes>
+        <freqShift>0</freqShift>
+        <writeModes>yes</writeModes>
+      </eigenFrequency>
+    </analysis>
+
+    <pdeList>
+      <!-- Mechanic PDE -->
+      <mechanic subType="3d">
+        <regionList>
+          <region name="V_plate"/>
+          <region name="V_piezo_south"/>
+          <region name="V_piezo_middle"/>
+          <region name="V_piezo_north"/>
+        </regionList>
+        <bcsAndLoads>
+          <fix name="S_fixed">
+            <comp dof="x"/>
+            <comp dof="y"/>
+            <comp dof="z"/>
+          </fix>
+        </bcsAndLoads>
+        <storeResults>
+          <nodeResult type="mechDisplacement">
+            <allRegions/>
+          </nodeResult>
+        </storeResults>
+      </mechanic>
+
+      <electrostatic>
+        <regionList>
+          <region name="V_piezo_south"/>
+          <region name="V_piezo_middle"/>
+          <region name="V_piezo_north"/>
+        </regionList>
+        <bcsAndLoads>
+          <ground name="S_piezo_south_bottom"/>
+          <ground name="S_piezo_middle_bottom"/>
+          <ground name="S_piezo_north_bottom"/>
+
+          <constraint name="S_piezo_south_top"/>
+          <constraint name="S_piezo_middle_top"/>
+          <constraint name="S_piezo_north_top"/>
+        </bcsAndLoads>
+        <storeResults>
+        <nodeResult type="elecPotential">
+          <allRegions/>
+        </nodeResult>
+        </storeResults>
+      </electrostatic>
+    </pdeList>
+
+    <couplingList>
+      <direct>
+        <piezoDirect>
+          <regionList>
+            <!-- Regions for piezo coupling-->
+            <region name="V_piezo_south"/>
+            <region name="V_piezo_middle"/>
+            <region name="V_piezo_north"/>
+          </regionList>
+        </piezoDirect>
+      </direct>
+    </couplingList>
+  </sequenceStep>
+
+  <sequenceStep index="3">
+    <analysis>
+      <harmonic>
+        <numFreq>999</numFreq>
+        <startFreq>1</startFreq>
+        <stopFreq>500</stopFreq>
+      </harmonic>
+    </analysis>
+
+    <pdeList>
+      <!-- Mechanic PDE -->
+      <mechanic subType="3d">
+        <regionList>
+          <region name="V_plate"/>
+          <region name="V_piezo_south"/>
+          <region name="V_piezo_middle"/>
+          <region name="V_piezo_north"/>
+        </regionList>
+        <bcsAndLoads>
+          <fix name="S_fixed">
+            <comp dof="x"/>
+            <comp dof="y"/>
+            <comp dof="z"/>
+          </fix>
+
+          <pressure name="S_force" value="1000"/>
+        </bcsAndLoads>
+        <storeResults>
+          <nodeResult type="mechDisplacement">
+            <allRegions/>
+          </nodeResult>
+        </storeResults>
+      </mechanic>
+
+      <electrostatic>
+        <regionList>
+          <region name="V_piezo_south"/>
+          <region name="V_piezo_middle"/>
+          <region name="V_piezo_north"/>
+        </regionList>
+        <bcsAndLoads>
+          <ground name="S_piezo_south_bottom"/>
+          <ground name="S_piezo_middle_bottom"/>
+          <ground name="S_piezo_north_bottom"/>
+
+          <constraint name="S_piezo_south_top"/>
+          <constraint name="S_piezo_middle_top"/>
+          <constraint name="S_piezo_north_top"/>
+        </bcsAndLoads>
+        <storeResults>
+          <nodeResult type="elecPotential">
+            <allRegions/>
+          </nodeResult>
+          <!-- Results for electrostatic PDE-->
+        </storeResults>
+      </electrostatic>
+    </pdeList>
+
+    <couplingList>
+      <direct>
+        <piezoDirect>
+          <regionList>
+            <!-- Regions for piezo coupling-->
+            <region name="V_piezo_south"/>
+            <region name="V_piezo_middle"/>
+            <region name="V_piezo_north"/>
+          </regionList>
+        </piezoDirect>
+      </direct>
+    </couplingList>
+  </sequenceStep>
+
+  
+  <!-- Transient analysis in sequenceStep 4 -->
+  <sequenceStep index="4">
+
+    <analysis>
+      <transient>
+        <numSteps> 1000 </numSteps>
+        <deltaT> 5e-4 </deltaT>
+      </transient>
+    </analysis>
+
+    <pdeList>
+      <mechanic subType="3d">
+        <regionList>
+          <region name="V_plate"         dampingId="rayleigh_damping"/>
+          <region name="V_piezo_south"   dampingId="rayleigh_damping"/>
+          <region name="V_piezo_middle"  dampingId="rayleigh_damping"/>
+          <region name="V_piezo_north"   dampingId="rayleigh_damping"/>
+        </regionList>
+
+        <dampingList>
+          <rayleigh id="rayleigh_damping"/>
+        </dampingList>
+
+        <!-- Use result from another sequenceStep as initial state of the transient simulation -->
+        <initialValues>
+          <initialState>
+            <sequenceStep index="1"/>
+          </initialState>
+        </initialValues>
+
+        <bcsAndLoads>
+          <fix name="S_fixed">
+          <comp dof="x"/>
+          <comp dof="y"/>
+          <comp dof="z"/>
+          </fix>
+        </bcsAndLoads>
+        <storeResults>
+          <nodeResult type="mechDisplacement">
+            <allRegions/>
+        </nodeResult>
+        </storeResults>
+      </mechanic>
+
+      <electrostatic>
+        <regionList>
+          <region name="V_piezo_south"/>
+          <region name="V_piezo_middle"/>
+          <region name="V_piezo_north"/>
+        </regionList>
+        <bcsAndLoads>
+          <ground name="S_piezo_south_bottom"/>
+          <ground name="S_piezo_middle_bottom"/>
+          <ground name="S_piezo_north_bottom"/>
+
+          <constraint name="S_piezo_south_top"/>
+          <constraint name="S_piezo_middle_top"/>
+          <constraint name="S_piezo_north_top"/>
+        </bcsAndLoads>
+        <storeResults>
+          <nodeResult type="elecPotential">
+            <allRegions/>
+          </nodeResult>
+        </storeResults>
+      </electrostatic>
+    </pdeList>
+
+    <couplingList>
+      <direct>
+        <piezoDirect>
+          <regionList>
+            <!-- Regions for piezo coupling-->
+            <region name="V_piezo_south"/>
+            <region name="V_piezo_middle"/>
+            <region name="V_piezo_north"/>
+          </regionList>
+        </piezoDirect>
+      </direct>
+    </couplingList>
+  </sequenceStep>
+
+
+
+
+</cfsSimulation>

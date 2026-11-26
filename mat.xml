@@ -1,0 +1,85 @@
+<?xml version='1.0' encoding='utf-8'?>
+<cfsMaterialDataBase xmlns="http://www.cfs++.org/material">
+  <material name="PMMA">
+    <mechanical>
+      <density>
+        <linear>
+          <real> 1180 </real>
+        </linear>
+      </density>
+      <elasticity>
+        <linear>
+          <isotropic>
+            <elasticityModulus>
+              <real> 0.045E+11 </real>
+            </elasticityModulus>
+            <poissonNumber>
+              <real> 0.4 </real>
+            </poissonNumber>
+          </isotropic>
+        </linear>
+      </elasticity>
+      <damping>
+        <rayleigh>
+          <coefficients>
+          <!-- Replace Rayleigh Damping Coefficient alpha and beta by your calculated values-->
+            <alpha> 0 </alpha>
+            <beta> 0 </beta>
+          </coefficients>
+        </rayleigh>
+      </damping>
+      </mechanical>
+  </material>
+  <material name="PIC 255">
+    <mechanical>
+      <density>
+        <linear>
+          <real> 7800 </real>
+        </linear>
+      </density>
+      <elasticity>
+        <linear>
+          <tensor dim1="6" dim2="6">
+            <real>
+              <!-- Fill the elasticity/stiffness tensor C with values -->
+              1.332E+11 8.715E+10 8.619E+10 0.000E+00 0.000E+00 0.000E+00
+              8.715E+10 1.332E+11 8.619E+10 0.000E+00 0.000E+00 0.000E+00
+              8.619E+10 8.619E+10 1.200E+11 0.000E+00 0.000E+00 0.000E+00
+              0.000E+00 0.000E+00 0.000E+00 2.176E+10 0.000E+00 0.000E+00
+              0.000E+00 0.000E+00 0.000E+00 0.000E+00 2.176E+10 0.000E+00
+              0.000E+00 0.000E+00 0.000E+00 0.000E+00 0.000E+00 2.302E+10
+          </real>
+          </tensor>
+        </linear>
+      </elasticity>
+    </mechanical>
+    <electric>
+      <permittivity>
+        <linear>
+          <tensor dim1="3" dim2="3">
+            <real>
+            <!-- Fill the permittivity tensor with values -->
+            8.048E-09 0.000E+00 0.000E+00
+            0.000E+00 8.048E-09 0.000E+00
+            0.000E+00 0.000E+00 7.836E-09
+            </real>
+          </tensor>
+        </linear>
+      </permittivity>
+    </electric>
+    <piezo>
+      <piezoCoupling>
+        <linear>
+          <tensor dim1="3" dim2="6">
+            <real>
+             <!-- Fill the piezoelectric coupling tensor with values -->
+              0.000E+00 0.000E+00 0.000E+00 0.000E+00 1.293E+01 0.000E+00
+              0.000E+00 0.000E+00 0.000E+00 1.293E+01 0.000E+00 0.000E+00
+              -4.514E+00 -4.514E+00 1.722E+01 0.000E+00 0.000E+00 0.000E+00
+            </real>
+          </tensor>
+        </linear>
+      </piezoCoupling>
+    </piezo>
+  </material>
+</cfsMaterialDataBase>
